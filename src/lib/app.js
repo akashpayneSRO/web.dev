@@ -71,6 +71,9 @@ if (serviceWorkerIsSupported(window.location.hostname)) {
 
 function serviceWorkerIsSupported(hostname) {
   // Allow local/prod as well as .netlify staging deploy target.
+  // We also check that updateViaCache is supported, which ensures that a browser checks all deps
+  // included via importScripts as well as the SW itself. (This works from mid-2018 everywhere, but
+  // it seems sane to check.)
   const allowedHostnames = [
     'web.dev',
     'web-dev-staging.appspot.com',
@@ -78,6 +81,7 @@ function serviceWorkerIsSupported(hostname) {
   ];
   return (
     'serviceWorker' in navigator &&
+    'updateViaCache' in ServiceWorkerRegistration.prototype &&
     (allowedHostnames.includes(hostname) || hostname.endsWith('.netlify.com'))
   );
 }
@@ -112,5 +116,5 @@ function ensureServiceWorker() {
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     window.location.reload();
   });
-  navigator.serviceWorker.register('/sw.js');
+  navigator.serviceWorker.register('/sw.js', {updateViaCache: 'all'});
 }
